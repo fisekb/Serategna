@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#087f70">
+  <title>Create account — Serategna</title>
+  <link rel="stylesheet" href="/styles.css">
+  <script defer src="/api.js"></script>
+  <script defer src="/app.js"></script>
+  <script defer src="/auth-page.js"></script>
+</head>
+<body>
+  <header class="site-header"><div class="nav-wrap"><a class="brand" href="/"><span class="brand-mark">S</span> Serategna</a><nav class="primary-nav" aria-label="Main navigation"><a href="/">Find workers</a><a href="/my-bookings.html">My bookings</a><a href="/worker-profile.html">Worker profile</a></nav><div class="account-area" data-account></div></div></header>
+  <main class="container auth-layout">
+    <section class="auth-aside"><span class="eyebrow">Join the community</span><h1>Make good work easier to find.</h1><p class="lead">Create an account to book skilled local professionals—or join as a worker and share your craft with your community.</p><p class="helper-text">Worker profiles are reviewed and approved before they appear in public search.</p></section>
+    <section class="card auth-card">
+      <h2>Create your account</h2><p class="helper-text">All fields marked required must be completed.</p>
+      <div id="form-message" class="notice" role="alert" hidden></div>
+      <form id="register-form">
+        <div class="field"><label for="name">Full name</label><input id="name" name="name" autocomplete="name" maxlength="120" required></div>
+        <div class="field"><label for="email">Email</label><input id="email" name="email" type="email" autocomplete="email" maxlength="255" required></div>
+        <div class="field"><label for="phone">Phone <span class="helper-text">(optional)</span></label><input id="phone" name="phone" type="tel" autocomplete="tel" maxlength="32"></div>
+        <div class="field"><label for="password">Password</label><input id="password" name="password" type="password" autocomplete="new-password" minlength="8" required><span class="helper-text">Use at least 8 characters.</span></div>
+        <div class="field"><label for="role">I am joining as</label><select id="role" name="role" required><option value="customer">Customer</option><option value="worker">Worker</option></select></div>
+        <div class="form-actions"><button class="button button--primary" type="submit">Create account</button></div>
+      </form>
+      <p class="helper-text">Already have an account? <a href="/login.html">Log in</a></p>
+    </section>
+  </main>
+</body>
+</html>

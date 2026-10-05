@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#087f70">
+  <meta name="description" content="Find trusted local gig workers for home and everyday jobs.">
+  <title>Serategna — Find local help</title>
+  <link rel="stylesheet" href="/styles.css">
+  <script defer src="/api.js"></script>
+  <script defer src="/app.js"></script>
+  <script defer src="/workers-page.js"></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="nav-wrap">
+      <a class="brand" href="/" aria-label="Serategna home"><span class="brand-mark">S</span> Serategna</a>
+      <nav class="primary-nav" aria-label="Main navigation">
+        <a href="/">Find workers</a>
+        <a href="/my-bookings.html">My bookings</a>
+        <a href="/worker-profile.html">Worker profile</a>
+      </nav>
+      <div class="account-area" data-account></div>
+    </div>
+  </header>
+  <main class="container">
+    <section class="hero">
+      <div>
+        <span class="eyebrow">Good work, close to home</span>
+        <h1>Find the right hands for the job.</h1>
+        <p class="lead">Discover approved local plumbers, electricians, carpenters, and more. Compare skills, locations, and rates—all in one place.</p>
+      </div>
+      <div class="hero-art" aria-hidden="true"><div class="hero-badge">Local skill. Trusted service.</div></div>
+    </section>
+
+    <section class="panel filter-panel" aria-labelledby="search-heading">
+      <h2 id="search-heading">Search local workers</h2>
+      <form id="worker-search" class="filter-grid">
+        <div class="field field--wide"><label for="skill">Skill</label><select id="skill" name="skill"><option value="">All skills</option></select></div>
+        <div class="field"><label for="city">City</label><input id="city" name="city" placeholder="e.g. Addis Ababa" autocomplete="address-level2"></div>
+        <div class="field"><label for="area">Area</label><input id="area" name="area" placeholder="e.g. Bole"></div>
+        <div class="field"><label for="minRate">Min. hourly rate</label><input id="minRate" name="minRate" type="number" min="0" step="0.01" inputmode="decimal" placeholder="Any"></div>
+        <div class="field"><label for="maxRate">Max. hourly rate</label><input id="maxRate" name="maxRate" type="number" min="0" step="0.01" inputmode="decimal" placeholder="Any"></div>
+        <div class="field"><label for="page-limit">Results per page</label><select id="page-limit" name="limit"><option>9</option><option>15</option><option>20</option></select></div>
+        <div class="field"><button class="button button--primary" type="submit">Search workers</button></div>
+      </form>
+    </section>
+
+    <section aria-labelledby="results-title">
+      <div class="section-heading"><div><span class="eyebrow">Browse professionals</span><h2 id="results-title">Approved workers</h2></div><p id="result-count" aria-live="polite"></p></div>
+      <div id="page-message" data-page-message class="notice" role="status" hidden></div>
+      <div id="worker-results" class="results-grid" aria-live="polite"><div class="loading-state">Loading workers…</div></div>
+      <nav id="pagination" class="pagination" aria-label="Worker results pages" hidden>
+        <button id="previous-page" class="button button--quiet" type="button">← Previous</button>
+        <span id="page-label" aria-live="polite"></span>
+        <button id="next-page" class="button button--quiet" type="button">Next →</button>
+      </nav>
+    </section>
+  </main>
+  <footer class="site-footer">Serategna · Connecting local talent with local needs</footer>
+</body>
+</html>

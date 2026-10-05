@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#087f70">
+  <title>Log in — Serategna</title>
+  <link rel="stylesheet" href="/styles.css">
+  <script defer src="/api.js"></script>
+  <script defer src="/app.js"></script>
+  <script defer src="/auth-page.js"></script>
+</head>
+<body>
+  <header class="site-header"><div class="nav-wrap"><a class="brand" href="/"><span class="brand-mark">S</span> Serategna</a><nav class="primary-nav" aria-label="Main navigation"><a href="/">Find workers</a><a href="/my-bookings.html">My bookings</a><a href="/worker-profile.html">Worker profile</a></nav><div class="account-area" data-account></div></div></header>
+  <main class="container auth-layout">
+    <section class="auth-aside"><span class="eyebrow">Welcome back</span><h1>Your next good job starts here.</h1><p class="lead">Sign in to manage your bookings, discover trusted workers, or keep your worker profile up to date.</p></section>
+    <section class="card auth-card">
+      <h2>Log in</h2><p class="helper-text">Use the email and password for your Serategna account.</p>
+      <div id="form-message" class="notice" role="alert" hidden></div>
+      <form id="login-form">
+        <div class="field"><label for="email">Email</label><input id="email" name="email" type="email" autocomplete="email" required></div>
+        <div class="field"><label for="password">Password</label><input id="password" name="password" type="password" autocomplete="current-password" required></div>
+        <div class="form-actions"><button class="button button--primary" type="submit">Log in</button></div>
+      </form>
+      <p class="helper-text">New to Serategna? <a href="/register.html">Create an account</a></p>
+    </section>
+  </main>
+</body>
+</html>

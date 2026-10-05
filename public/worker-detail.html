@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#087f70">
+  <title>Worker details — Serategna</title>
+  <link rel="stylesheet" href="/styles.css">
+  <script defer src="/api.js"></script>
+  <script defer src="/app.js"></script>
+  <script defer src="/worker-detail-page.js"></script>
+</head>
+<body>
+  <header class="site-header"><div class="nav-wrap"><a class="brand" href="/"><span class="brand-mark">S</span> Serategna</a><nav class="primary-nav" aria-label="Main navigation"><a href="/">Find workers</a><a href="/my-bookings.html">My bookings</a><a href="/worker-profile.html">Worker profile</a></nav><div class="account-area" data-account></div></div></header>
+  <main class="container page-shell">
+    <a href="/">← Back to workers</a>
+    <div id="page-message" data-page-message class="notice" role="status" hidden></div>
+    <div id="worker-loading" class="loading-state">Loading worker details…</div>
+    <div id="worker-content" class="detail-layout" hidden>
+      <div>
+        <section id="worker-details" class="card detail-card"></section>
+        <section class="panel section-stack" aria-labelledby="reviews-title">
+          <div class="section-heading"><div><span class="eyebrow">Customer feedback</span><h2 id="reviews-title">Reviews</h2></div></div>
+          <div id="review-list" aria-live="polite"><div class="loading-state">Loading reviews…</div></div>
+        </section>
+      </div>
+      <aside id="booking-area" class="panel booking-panel"></aside>
+    </div>
+  </main>
+  <footer class="site-footer">Serategna · Find the right hands for the job</footer>
+</body>
+</html>
