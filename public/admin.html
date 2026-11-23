@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#087f70">
+  <title>Admin — Serategna</title>
+  <link rel="stylesheet" href="/styles.css">
+  <script defer src="/api.js"></script>
+  <script defer src="/app.js"></script>
+  <script defer src="/admin-page.js"></script>
+</head>
+<body>
+  <header class="site-header"><div class="nav-wrap"><a class="brand" href="/"><span class="brand-mark">S</span> Serategna</a><nav class="primary-nav" aria-label="Main navigation"><a href="/">Find workers</a><a href="/my-bookings.html">My bookings</a><a href="/worker-profile.html">Worker profile</a></nav><div class="account-area" data-account></div></div></header>
+  <main class="container page-shell">
+    <span class="eyebrow">Administration</span>
+    <h1>Worker and account management</h1>
+    <p class="lead">Review worker profiles and manage account access.</p>
+    <div id="page-message" data-page-message class="notice" role="status" hidden></div>
+
+    <div class="admin-tabs" role="tablist" aria-label="Admin sections">
+      <button class="admin-tab is-active" type="button" role="tab" aria-selected="true" data-admin-tab="workers">Workers</button>
+      <button class="admin-tab" type="button" role="tab" aria-selected="false" data-admin-tab="users">User accounts</button>
+    </div>
+
+    <section class="panel admin-section" data-admin-panel="workers" aria-labelledby="workers-heading">
+      <div class="section-heading"><div><span class="eyebrow">Profile approval</span><h2 id="workers-heading">Workers</h2></div><span id="worker-count" class="helper-text"></span></div>
+      <div id="worker-list" class="admin-list"><div class="loading-state">Loading worker profiles…</div></div>
+    </section>
+
+    <section class="panel admin-section" data-admin-panel="users" aria-labelledby="users-heading" hidden>
+      <div class="section-heading"><div><span class="eyebrow">Access control</span><h2 id="users-heading">User accounts</h2></div><span id="user-count" class="helper-text"></span></div>
+      <div id="user-list" class="admin-list"><div class="loading-state">Loading users…</div></div>
+    </section>
+  </main>
+  <footer class="site-footer">Serategna · Administration</footer>
+</body>
+</html>

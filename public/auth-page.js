@@ -38,7 +38,12 @@ document.addEventListener('DOMContentLoaded', () => {
         api.setSession(result.data.token, result.data.user);
         const returnTo = new URLSearchParams(window.location.search).get('returnTo');
         const safeReturnTo = returnTo && returnTo.startsWith('/') && !returnTo.startsWith('//') ? returnTo : '';
-        window.location.href = safeReturnTo || (result.data.user.role === 'worker' ? '/worker-profile.html' : '/');
+        const defaultPage = result.data.user.role === 'admin'
+          ? '/admin.html'
+          : result.data.user.role === 'worker'
+            ? '/worker-profile.html'
+            : '/';
+        window.location.href = safeReturnTo || defaultPage;
       } catch (error) {
         ui.showMessage(message, error.message, 'error');
         ui.setLoading(button, false);

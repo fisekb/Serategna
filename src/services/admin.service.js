@@ -37,16 +37,24 @@ async function listPendingWorkers() {
   });
 }
 
-async function approveWorker(workerProfileId) {
+async function listWorkers() {
+  return WorkerProfile.findAll({
+    attributes: PENDING_PROFILE_ATTRIBUTES,
+    include: [
+      { model: User, as: 'user', attributes: ['id', 'name', 'email', 'phone', 'isActive'] },
+      { model: Skill, as: 'skill', attributes: ['id', 'name'] }
+    ],
+    order: [['createdAt', 'ASC'], ['id', 'ASC']]
+  });
+}
+
+async function setWorkerApprovalStatus(workerProfileId, isApproved) {
   const profile = await WorkerProfile.findByPk(workerProfileId);
   if (!profile) {
     throw new AppError('Worker profile not found.', 404);
   }
-  if (profile.isApproved) {
-    throw new AppError('Worker profile has already been approved.', 409);
-  }
 
-  await profile.update({ isApproved: true });
+  await profile.update({ isApproved });
   return WorkerProfile.findByPk(workerProfileId, {
     attributes: PENDING_PROFILE_ATTRIBUTES,
     include: [
@@ -56,4 +64,15 @@ async function approveWorker(workerProfileId) {
   });
 }
 
-module.exports = { listUsers, setUserActiveStatus, listPendingWorkers, approveWorker };
+async function approveWorker(workerProfileId) {
+  return setWorkerApprovalStatus(workerProfileId, true);
+}
+
+module.exports = {
+  listUsers,
+  setUserActiveStatus,
+  listPendingWorkers,
+  listWorkers,
+  setWorkerApprovalStatus,
+  approveWorker
+};

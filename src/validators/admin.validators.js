@@ -15,4 +15,16 @@ const workerProfileIdValidator = [
   param('id').isInt({ min: 1 }).withMessage('Worker profile id must be a positive integer.').toInt()
 ];
 
-module.exports = { userIdValidator, updateUserStatusValidators, workerProfileIdValidator };
+const updateWorkerStatusValidators = [
+  ...workerProfileIdValidator,
+  body('isApproved')
+    .isBoolean({ strict: true }).withMessage('isApproved must be a boolean.')
+    .toBoolean({ strict: true })
+];
+
+module.exports = {
+  userIdValidator,
+  updateUserStatusValidators,
+  workerProfileIdValidator,
+  updateWorkerStatusValidators
+};
