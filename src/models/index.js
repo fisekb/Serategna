@@ -47,6 +47,18 @@ JobOffer.belongsTo(User, {
   onDelete: 'CASCADE',
   onUpdate: 'CASCADE'
 });
+User.hasMany(JobOffer, {
+  as: 'acceptedJobOffers',
+  foreignKey: 'acceptedWorkerId',
+  onDelete: 'RESTRICT',
+  onUpdate: 'CASCADE'
+});
+JobOffer.belongsTo(User, {
+  as: 'acceptedWorker',
+  foreignKey: 'acceptedWorkerId',
+  onDelete: 'RESTRICT',
+  onUpdate: 'CASCADE'
+});
 
 Skill.hasMany(JobOffer, {
   as: 'jobOffers',

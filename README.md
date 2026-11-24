@@ -100,7 +100,10 @@ All API routes are prefixed with `/api`. Successful responses use `{ "success": 
 | `DELETE` | `/api/workers/profile`           | Worker             | Delete your own worker profile                                                                               |
 | `POST`   | `/api/jobs`                      | Customer           | Post a job offer with a requested skill, hourly rate, city, area, and description                            |
 | `GET`    | `/api/jobs/mine`                 | Customer           | List your own job offers                                                                                    |
+| `PUT`    | `/api/jobs/:id`                   | Customer           | Edit your own offer while no worker has accepted it                                                         |
+| `DELETE` | `/api/jobs/:id`                   | Customer           | Delete your own offer while no worker has accepted it                                                       |
 | `GET`    | `/api/jobs`                      | Worker             | Browse customer job offers                                                                                  |
+| `PATCH`  | `/api/jobs/:id/accept`            | Worker             | Accept an open customer offer; only one worker can accept each offer                                        |
 | `POST`   | `/api/bookings`                  | Customer           | Request a booking with an approved worker                                                                    |
 | `GET`    | `/api/bookings/my`               | Customer or worker | List bookings belonging to the signed-in account                                                             |
 | `PATCH`  | `/api/bookings/:id/status`       | Customer or worker | Cancel your own booking or transition an assigned booking                                                    |
@@ -116,6 +119,7 @@ All API routes are prefixed with `/api`. Successful responses use `{ "success": 
 - New bookings start in `pending` status. Workers can accept/reject pending bookings and complete accepted bookings. Customers can cancel their own pending or accepted bookings.
 - Reviews can only be created by the booking's customer after the booking is completed. The database enforces one review per booking.
 - Customers can update their own name and phone number and post job offers. Workers can browse all offers; job offer fields and skill relationships are stored through the Sequelize migration.
+- Accepting an offer records the worker and prevents the customer from editing or deleting that offer. The acceptance transaction locks the offer row so two workers cannot accept the same offer concurrently.
 
 ## Frontend pages
 

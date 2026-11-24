@@ -12,7 +12,7 @@ jest.mock('../src/models', () => ({
     findAll: jest.fn()
   },
   Review: { findOne: jest.fn(), create: jest.fn(), findAll: jest.fn() },
-  JobOffer: { create: jest.fn(), findByPk: jest.fn(), findAll: jest.fn() },
+  JobOffer: { create: jest.fn(), findOne: jest.fn(), findByPk: jest.fn(), findAll: jest.fn() },
   sequelize: { transaction: jest.fn(), close: jest.fn() }
 }));
 
@@ -184,6 +184,97 @@ describe('job offers', () => {
       });
     expect(createResponse.status).toBe(403);
     expect(JobOffer.create).not.toHaveBeenCalled();
+  });
+
+  test('customers can edit their own open offers', async () => {
+    User.findByPk.mockResolvedValue(makeUser({ id: 801, role: 'customer' }));
+    Skill.findByPk.mockResolvedValue({ id: 12 });
+    const offer = {
+      id: 72,
+      customerId: 801,
+      acceptedWorkerId: null,
+      update: jest.fn(async function (values) {
+        Object.assign(this, values);
+      })
+    };
+    JobOffer.findOne.mockResolvedValue(offer);
+    JobOffer.findByPk.mockResolvedValue(offer);
+    sequelize.transaction.mockImplementation((callback) => callback({ LOCK: { UPDATE: 'UPDATE' } }));
+
+    const response = await request(app)
+      .put('/api/jobs/72')
+      .set('Authorization', bearer({ id: 801 }))
+      .send({
+        skillId: 12,
+        hourlyRate: 175,
+        city: 'Addis Ababa',
+        area: 'Bole',
+        description: 'Repair the kitchen sink'
+      });
+
+    expect(response.status).toBe(200);
+    expect(JobOffer.findOne).toHaveBeenCalledWith(expect.objectContaining({
+      where: { id: 72, customerId: 801 },
+      lock: 'UPDATE'
+    }));
+    expect(offer.update).toHaveBeenCalledWith(expect.objectContaining({ hourlyRate: 175 }), expect.any(Object));
+  });
+
+  test('accepted offers cannot be edited or deleted by the customer', async () => {
+    User.findByPk.mockResolvedValue(makeUser({ id: 901, role: 'customer' }));
+    const offer = {
+      id: 73,
+      customerId: 901,
+      acceptedWorkerId: 902,
+      update: jest.fn(),
+      destroy: jest.fn()
+    };
+    JobOffer.findOne.mockResolvedValue(offer);
+    sequelize.transaction.mockImplementation((callback) => callback({ LOCK: { UPDATE: 'UPDATE' } }));
+    const authorization = { Authorization: bearer({ id: 901 }) };
+    const payload = {
+      skillId: 12,
+      hourlyRate: 175,
+      city: 'Addis Ababa',
+      description: 'Repair the kitchen sink'
+    };
+
+    const updateResponse = await request(app).put('/api/jobs/73').set(authorization).send(payload);
+    const deleteResponse = await request(app).delete('/api/jobs/73').set(authorization);
+
+    expect(updateResponse.status).toBe(409);
+    expect(deleteResponse.status).toBe(409);
+    expect(offer.update).not.toHaveBeenCalled();
+    expect(offer.destroy).not.toHaveBeenCalled();
+  });
+
+  test('workers can accept an open offer', async () => {
+    User.findByPk.mockResolvedValue(makeUser({ id: 1001, role: 'worker' }));
+    const offer = {
+      id: 74,
+      acceptedWorkerId: null,
+      update: jest.fn(async function (values) {
+        Object.assign(this, values);
+      })
+    };
+    JobOffer.findByPk.mockResolvedValue(offer);
+    sequelize.transaction.mockImplementation((callback) => callback({ LOCK: { UPDATE: 'UPDATE' } }));
+
+    const response = await request(app)
+      .patch('/api/jobs/74/accept')
+      .set('Authorization', bearer({ id: 1001 }));
+    const secondResponse = await request(app)
+      .patch('/api/jobs/74/accept')
+      .set('Authorization', bearer({ id: 1001 }));
+
+    expect(response.status).toBe(200);
+    expect(secondResponse.status).toBe(409);
+    expect(offer.update).toHaveBeenCalledTimes(1);
+    expect(offer.update).toHaveBeenCalledWith(expect.objectContaining({
+      acceptedWorkerId: 1001,
+      acceptedAt: expect.any(Date)
+    }), expect.any(Object));
+    expect(response.body.data.jobOffer.acceptedWorkerId).toBe(1001);
   });
 });
 

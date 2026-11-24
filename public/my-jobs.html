@@ -19,6 +19,7 @@
     <div id="page-message" data-page-message class="notice" role="status" hidden></div>
     <section class="panel">
       <div id="form-message" class="notice" role="alert" hidden></div>
+      <h2 id="job-form-heading">Create job offer</h2>
       <form id="job-offer-form">
         <div class="form-grid">
           <div class="field"><label for="skillId">Wished primary skill</label><select id="skillId" name="skillId" required><option value="">Choose a skill</option></select></div>
@@ -27,7 +28,7 @@
           <div class="field"><label for="area">Area <span class="helper-text">(optional)</span></label><input id="area" name="area" maxlength="120" autocomplete="address-level3"></div>
           <div class="field field--full"><label for="description">Description</label><textarea id="description" name="description" maxlength="5000" placeholder="Describe the job and the work you need done" required></textarea></div>
         </div>
-        <div class="form-actions"><button id="post-job" class="button button--primary" type="submit">Post job</button></div>
+        <div class="form-actions"><button id="post-job" class="button button--primary" type="submit">Post job</button><button id="cancel-edit" class="button button--quiet" type="button" hidden>Cancel edit</button></div>
       </form>
     </section>
     <section class="section-stack" aria-labelledby="my-jobs-heading">

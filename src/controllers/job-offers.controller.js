@@ -10,6 +10,33 @@ const createJobOffer = asyncHandler(async (req, res) => {
   });
 });
 
+const updateJobOffer = asyncHandler(async (req, res) => {
+  const jobOffer = await jobOffersService.updateJobOffer(req.user.id, Number(req.params.id), req.body);
+  return res.status(200).json({
+    success: true,
+    message: 'Job offer updated successfully.',
+    data: { jobOffer }
+  });
+});
+
+const deleteJobOffer = asyncHandler(async (req, res) => {
+  await jobOffersService.deleteJobOffer(req.user.id, Number(req.params.id));
+  return res.status(200).json({
+    success: true,
+    message: 'Job offer deleted successfully.',
+    data: null
+  });
+});
+
+const acceptJobOffer = asyncHandler(async (req, res) => {
+  const jobOffer = await jobOffersService.acceptJobOffer(req.user.id, Number(req.params.id));
+  return res.status(200).json({
+    success: true,
+    message: 'Job offer accepted successfully.',
+    data: { jobOffer }
+  });
+});
+
 const listJobOffers = asyncHandler(async (_req, res) => {
   const jobOffers = await jobOffersService.listJobOffers();
   return res.status(200).json({
@@ -28,4 +55,11 @@ const listMyJobOffers = asyncHandler(async (req, res) => {
   });
 });
 
-module.exports = { createJobOffer, listJobOffers, listMyJobOffers };
+module.exports = {
+  createJobOffer,
+  updateJobOffer,
+  deleteJobOffer,
+  acceptJobOffer,
+  listJobOffers,
+  listMyJobOffers
+};

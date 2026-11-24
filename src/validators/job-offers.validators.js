@@ -1,4 +1,4 @@
-const { body } = require('express-validator');
+const { body, param } = require('express-validator');
 
 const MAX_RATE = 99999999.99;
 const JOB_OFFER_FIELDS = ['skillId', 'hourlyRate', 'city', 'area', 'description'];
@@ -36,4 +36,8 @@ const createJobOfferValidators = [
     .isLength({ max: 5000 }).withMessage('Description must be 5000 characters or fewer.')
 ];
 
-module.exports = { createJobOfferValidators };
+const jobOfferIdValidator = [
+  param('id').isInt({ min: 1 }).withMessage('Job offer id must be a positive integer.').toInt()
+];
+
+module.exports = { createJobOfferValidators, jobOfferIdValidator };

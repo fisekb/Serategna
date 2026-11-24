@@ -5,9 +5,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   const pageMessage = document.querySelector('#page-message');
   const formMessage = document.querySelector('#form-message');
   const postButton = document.querySelector('#post-job');
+  const cancelEditButton = document.querySelector('#cancel-edit');
+  const formHeading = document.querySelector('#job-form-heading');
 
   const user = await ui.requireRole('customer');
   if (!user) return;
+  let editingOfferId = null;
 
   async function loadOffers() {
     offersList.innerHTML = '<div class="loading-state">Loading your job offers…</div>';
@@ -17,6 +20,12 @@ document.addEventListener('DOMContentLoaded', async () => {
       offersList.innerHTML = offers.length
         ? offers.map((offer) => renderOffer(offer)).join('')
         : '<div class="empty-state"><h3>No job offers yet</h3><p>Post a job above to let local workers know what you need.</p></div>';
+      offersList.querySelectorAll('[data-edit-offer]').forEach((button) => {
+        button.addEventListener('click', () => editOffer(offers.find((offer) => String(offer.id) === button.dataset.editOffer)));
+      });
+      offersList.querySelectorAll('[data-delete-offer]').forEach((button) => {
+        button.addEventListener('click', () => deleteOffer(button.dataset.deleteOffer, button));
+      });
     } catch (error) {
       offersList.innerHTML = '';
       ui.showMessage(pageMessage, error.message, 'error');
@@ -25,8 +34,55 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   function renderOffer(offer) {
     const location = [offer.area, offer.city].filter(Boolean).map(ui.escapeHtml).join(', ');
-    return `<article class="card worker-card"><div class="worker-top"><div><span class="chip">${ui.escapeHtml(offer.skill?.name || 'Skill')}</span><h3>${ui.escapeHtml(location)}</h3></div></div><p class="worker-description">${ui.escapeHtml(offer.description)}</p><div class="card-footer"><span class="rate">${ui.escapeHtml(offer.hourlyRate)} / hour</span><span class="worker-meta">Posted ${ui.escapeHtml(ui.formatDate(offer.createdAt, { dateStyle: 'medium' }))}</span></div></article>`;
+    const accepted = Boolean(offer.acceptedWorkerId);
+    const acceptanceStatus = accepted
+      ? `<span class="status status--accepted">Accepted by ${ui.escapeHtml(offer.acceptedWorker?.name || 'a worker')}</span>`
+      : '<span class="status status--pending">Waiting for a worker</span>';
+    const actions = accepted
+      ? ''
+      : `<div class="button-row"><button class="button button--quiet button--small" type="button" data-edit-offer="${ui.escapeHtml(offer.id)}">Edit offer</button><button class="button button--danger button--small" type="button" data-delete-offer="${ui.escapeHtml(offer.id)}">Delete offer</button></div>`;
+    return `<article class="card worker-card"><div class="worker-top"><div><span class="chip">${ui.escapeHtml(offer.skill?.name || 'Skill')}</span><h3>${ui.escapeHtml(location)}</h3></div>${acceptanceStatus}</div><p class="worker-description">${ui.escapeHtml(offer.description)}</p><div class="card-footer"><span class="rate">${ui.escapeHtml(offer.hourlyRate)} / hour</span><span class="worker-meta">Posted ${ui.escapeHtml(ui.formatDate(offer.createdAt, { dateStyle: 'medium' }))}</span></div>${actions}</article>`;
   }
+
+  function editOffer(offer) {
+    if (!offer || offer.acceptedWorkerId) return;
+    editingOfferId = offer.id;
+    form.elements.namedItem('skillId').value = offer.skillId;
+    form.elements.namedItem('hourlyRate').value = offer.hourlyRate;
+    form.elements.namedItem('city').value = offer.city;
+    form.elements.namedItem('area').value = offer.area || '';
+    form.elements.namedItem('description').value = offer.description;
+    formHeading.textContent = 'Edit job offer';
+    postButton.textContent = 'Save changes';
+    cancelEditButton.hidden = false;
+    form.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  function resetEditor() {
+    form.reset();
+    editingOfferId = null;
+    formHeading.textContent = 'Create job offer';
+    postButton.textContent = 'Post job';
+    cancelEditButton.hidden = true;
+  }
+
+  async function deleteOffer(offerId, button) {
+    if (!window.confirm('Delete this job offer? This cannot be undone.')) return;
+    ui.setLoading(button, true, 'Deleting…');
+    ui.showMessage(pageMessage, '', 'info');
+    try {
+      await api.delete(`/jobs/${encodeURIComponent(offerId)}`);
+      if (String(editingOfferId) === String(offerId)) resetEditor();
+      ui.showMessage(pageMessage, 'Your job offer was deleted.', 'success');
+      await loadOffers();
+    } catch (error) {
+      ui.showMessage(pageMessage, error.message, 'error');
+    } finally {
+      ui.setLoading(button, false);
+    }
+  }
+
+  cancelEditButton.addEventListener('click', resetEditor);
 
   try {
     const skillsResult = await api.get('/skills');
@@ -50,17 +106,25 @@ document.addEventListener('DOMContentLoaded', async () => {
       area: String(values.get('area') || '').trim() || null,
       description: String(values.get('description')).trim()
     };
+    const offerId = editingOfferId;
     ui.showMessage(formMessage, '', 'info');
-    ui.setLoading(postButton, true, 'Posting…');
+    ui.setLoading(postButton, true, offerId ? 'Saving…' : 'Posting…');
     try {
-      await api.post('/jobs', payload);
-      form.reset();
-      ui.showMessage(formMessage, 'Your job offer is now visible to workers.', 'success');
+      if (offerId) {
+        await api.put(`/jobs/${encodeURIComponent(offerId)}`, payload);
+        resetEditor();
+        ui.showMessage(formMessage, 'Your job offer was updated.', 'success');
+      } else {
+        await api.post('/jobs', payload);
+        form.reset();
+        ui.showMessage(formMessage, 'Your job offer is now visible to workers.', 'success');
+      }
       await loadOffers();
     } catch (error) {
       ui.showMessage(formMessage, error.message, 'error');
     } finally {
       ui.setLoading(postButton, false);
+      postButton.textContent = editingOfferId ? 'Save changes' : 'Post job';
     }
   });
 

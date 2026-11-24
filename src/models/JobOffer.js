@@ -8,6 +8,14 @@ module.exports = (sequelize, DataTypes) => sequelize.define('JobOffer', {
     type: DataTypes.INTEGER,
     allowNull: false
   },
+  acceptedWorkerId: {
+    type: DataTypes.INTEGER,
+    allowNull: true
+  },
+  acceptedAt: {
+    type: DataTypes.DATE,
+    allowNull: true
+  },
   skillId: {
     type: DataTypes.INTEGER,
     allowNull: false
