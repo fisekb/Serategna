@@ -6,6 +6,7 @@ const workersRoutes = require('./workers.routes');
 const bookingsRoutes = require('./bookings.routes');
 const reviewsRoutes = require('./reviews.routes');
 const adminRoutes = require('./admin.routes');
+const jobOffersRoutes = require('./job-offers.routes');
 
 const router = express.Router();
 
@@ -14,6 +15,7 @@ router.use('/skills', skillsRoutes);
 router.use('/workers', workersRoutes);
 router.use('/bookings', bookingsRoutes);
 router.use('/reviews', reviewsRoutes);
+router.use('/jobs', jobOffersRoutes);
 router.use('/admin', adminRoutes);
 router.use(healthRoutes);
 

@@ -4,7 +4,7 @@ jest.mock('../src/models', () => ({
     findByPk: jest.fn(),
     findOne: jest.fn()
   },
-  Skill: { findAll: jest.fn() },
+  Skill: { findAll: jest.fn(), findByPk: jest.fn() },
   WorkerProfile: { findOne: jest.fn() },
   Booking: {
     create: jest.fn(),
@@ -12,13 +12,14 @@ jest.mock('../src/models', () => ({
     findAll: jest.fn()
   },
   Review: { findOne: jest.fn(), create: jest.fn(), findAll: jest.fn() },
+  JobOffer: { create: jest.fn(), findByPk: jest.fn(), findAll: jest.fn() },
   sequelize: { transaction: jest.fn(), close: jest.fn() }
 }));
 
 const request = require('supertest');
 const bcrypt = require('bcrypt');
 const app = require('../src/app');
-const { User, WorkerProfile, Booking, sequelize } = require('../src/models');
+const { User, Skill, WorkerProfile, Booking, JobOffer, sequelize } = require('../src/models');
 const generateToken = require('../src/utils/generateToken');
 
 function makeUser(overrides) {
@@ -99,6 +100,90 @@ describe('authentication routes', () => {
     expect(User.findByPk).toHaveBeenCalledWith('101', {
       attributes: { exclude: ['passwordHash'] }
     });
+  });
+
+  test('customers can update only their own name and phone details', async () => {
+    const customer = makeUser({
+      update: jest.fn(async function (values) {
+        Object.assign(this, values);
+      })
+    });
+    User.findByPk.mockResolvedValue(customer);
+
+    const response = await request(app)
+      .patch('/api/auth/profile')
+      .set('Authorization', bearer({ id: 101 }))
+      .send({ name: 'Updated Customer', phone: '555-0123' });
+
+    expect(response.status).toBe(200);
+    expect(customer.update).toHaveBeenCalledWith({ name: 'Updated Customer', phone: '555-0123' });
+    expect(response.body.data.user).toMatchObject({ name: 'Updated Customer', phone: '555-0123' });
+    expect(response.body.data.user).not.toHaveProperty('passwordHash');
+  });
+});
+
+describe('job offers', () => {
+  test('customers can create offers and ownership comes from the authenticated account', async () => {
+    User.findByPk.mockResolvedValue(makeUser({ id: 601, role: 'customer' }));
+    Skill.findByPk.mockResolvedValue({ id: 12 });
+    JobOffer.create.mockResolvedValue({ id: 72 });
+    JobOffer.findByPk.mockResolvedValue({
+      id: 72,
+      customerId: 601,
+      skillId: 12,
+      hourlyRate: '150.00',
+      city: 'Addis Ababa',
+      area: 'Bole',
+      description: 'Repair the kitchen sink'
+    });
+
+    const response = await request(app)
+      .post('/api/jobs')
+      .set('Authorization', bearer({ id: 601 }))
+      .send({
+        skillId: 12,
+        hourlyRate: 150,
+        city: 'Addis Ababa',
+        area: 'Bole',
+        description: 'Repair the kitchen sink'
+      });
+
+    expect(response.status).toBe(201);
+    expect(JobOffer.create).toHaveBeenCalledWith(expect.objectContaining({
+      customerId: 601,
+      skillId: 12,
+      hourlyRate: 150
+    }));
+    expect(response.body.data.jobOffer.customerId).toBe(601);
+
+    JobOffer.findAll.mockResolvedValue([]);
+    const ownOffersResponse = await request(app)
+      .get('/api/jobs/mine')
+      .set('Authorization', bearer({ id: 601 }));
+    expect(ownOffersResponse.status).toBe(200);
+    expect(JobOffer.findAll).toHaveBeenCalledWith(expect.objectContaining({ where: { customerId: 601 } }));
+  });
+
+  test('workers can browse offers but cannot post them', async () => {
+    User.findByPk.mockResolvedValue(makeUser({ id: 701, role: 'worker' }));
+    JobOffer.findAll.mockResolvedValue([]);
+
+    const listResponse = await request(app)
+      .get('/api/jobs')
+      .set('Authorization', bearer({ id: 701 }));
+    expect(listResponse.status).toBe(200);
+
+    const createResponse = await request(app)
+      .post('/api/jobs')
+      .set('Authorization', bearer({ id: 701 }))
+      .send({
+        skillId: 12,
+        hourlyRate: 150,
+        city: 'Addis Ababa',
+        description: 'Repair the kitchen sink'
+      });
+    expect(createResponse.status).toBe(403);
+    expect(JobOffer.create).not.toHaveBeenCalled();
   });
 });
 

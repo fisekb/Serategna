@@ -89,6 +89,7 @@ All API routes are prefixed with `/api`. Successful responses use `{ "success": 
 | `POST`   | `/api/auth/register`             | Public             | Register a customer or worker; admin signup is not allowed                                                   |
 | `POST`   | `/api/auth/login`                | Public             | Verify credentials and return a JWT                                                                          |
 | `GET`    | `/api/auth/me`                   | Signed-in user     | Get the current account                                                                                      |
+| `PATCH`  | `/api/auth/profile`              | Customer           | Update your own name and phone number                                                                       |
 | `GET`    | `/api/skills`                    | Public             | List service skills                                                                                          |
 | `GET`    | `/api/workers`                   | Public             | Search approved worker profiles; supports `skill`, `city`, `area`, `minRate`, `maxRate`, `page`, and `limit` |
 | `GET`    | `/api/workers/:id`               | Public             | Get an approved worker profile (`id` is a WorkerProfile ID)                                                  |
@@ -97,6 +98,9 @@ All API routes are prefixed with `/api`. Successful responses use `{ "success": 
 | `POST`   | `/api/workers/profile`           | Worker             | Create your single worker profile                                                                            |
 | `PUT`    | `/api/workers/profile`           | Worker             | Update your own worker profile                                                                               |
 | `DELETE` | `/api/workers/profile`           | Worker             | Delete your own worker profile                                                                               |
+| `POST`   | `/api/jobs`                      | Customer           | Post a job offer with a requested skill, hourly rate, city, area, and description                            |
+| `GET`    | `/api/jobs/mine`                 | Customer           | List your own job offers                                                                                    |
+| `GET`    | `/api/jobs`                      | Worker             | Browse customer job offers                                                                                  |
 | `POST`   | `/api/bookings`                  | Customer           | Request a booking with an approved worker                                                                    |
 | `GET`    | `/api/bookings/my`               | Customer or worker | List bookings belonging to the signed-in account                                                             |
 | `PATCH`  | `/api/bookings/:id/status`       | Customer or worker | Cancel your own booking or transition an assigned booking                                                    |
@@ -111,6 +115,7 @@ All API routes are prefixed with `/api`. Successful responses use `{ "success": 
 - `POST /api/bookings` expects `workerId` to be the worker's **User ID**, because the booking foreign key references `Users`. In worker search results this value is available as `data.workers[].user.id`.
 - New bookings start in `pending` status. Workers can accept/reject pending bookings and complete accepted bookings. Customers can cancel their own pending or accepted bookings.
 - Reviews can only be created by the booking's customer after the booking is completed. The database enforces one review per booking.
+- Customers can update their own name and phone number and post job offers. Workers can browse all offers; job offer fields and skill relationships are stored through the Sequelize migration.
 
 ## Frontend pages
 
@@ -119,6 +124,9 @@ The Express app serves the plain static frontend from `public/`:
 - `/` — Worker search and filters
 - `/register.html` and `/login.html` — Account creation and login
 - `/worker-profile.html` — Create/edit your worker profile
+- `/customer-profile.html` — View and update your customer name and phone number
+- `/my-jobs.html` — Post and review your job offers
+- `/job-offers.html` — Browse customer job offers as a worker
 - `/worker-detail.html?id=<profile-id>` — Worker details, reviews, and booking form
 - `/my-bookings.html` — View and manage your bookings
 

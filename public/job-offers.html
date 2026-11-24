@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#087f70">
+  <title>Find job — Serategna</title>
+  <link rel="stylesheet" href="/styles.css">
+  <script defer src="/api.js"></script>
+  <script defer src="/app.js"></script>
+  <script defer src="/job-offers-page.js"></script>
+</head>
+<body>
+  <header class="site-header"><div class="nav-wrap"><a class="brand" href="/"><span class="brand-mark">S</span> Serategna</a><nav class="primary-nav" aria-label="Main navigation"><a href="/job-offers.html">Find job</a><a href="/my-bookings.html">My bookings</a><a href="/worker-profile.html">My profile</a></nav><div class="account-area" data-account></div></div></header>
+  <main class="container page-shell">
+    <span class="eyebrow">Local work opportunities</span>
+    <h1>Find job</h1>
+    <p class="lead">Browse jobs customers have posted and see the requested skill, hourly rate, and location.</p>
+    <div id="page-message" data-page-message class="notice" role="status" hidden></div>
+    <section aria-labelledby="job-results-heading">
+      <div class="section-heading"><div><span class="eyebrow">Customer offers</span><h2 id="job-results-heading">Available jobs</h2></div><p id="job-count" aria-live="polite"></p></div>
+      <div id="job-offers" class="results-grid" aria-live="polite"><div class="loading-state">Loading jobs…</div></div>
+    </section>
+  </main>
+  <footer class="site-footer">Serategna · Connecting local talent with local needs</footer>
+</body>
+</html>

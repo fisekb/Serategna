@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
           ? '/admin.html'
           : result.data.user.role === 'worker'
             ? '/worker-profile.html'
-            : '/';
+            : '/my-jobs.html';
         window.location.href = safeReturnTo || defaultPage;
       } catch (error) {
         ui.showMessage(message, error.message, 'error');

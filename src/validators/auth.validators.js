@@ -44,4 +44,27 @@ const loginValidators = [
     .notEmpty().withMessage('Password is required.')
 ];
 
-module.exports = { registerValidators, loginValidators };
+const updateCustomerProfileValidators = [
+  body('name').custom((_value, { req }) => {
+    const allowedFields = ['name', 'phone'];
+    const fields = Object.keys(req.body || {});
+    if (fields.length === 0 || fields.some((field) => !allowedFields.includes(field))) {
+      throw new Error('Provide only your name and phone number to update your profile.');
+    }
+    return true;
+  }),
+  body('name')
+    .isString().withMessage('Name must be text.')
+    .bail()
+    .trim()
+    .notEmpty().withMessage('Name is required.')
+    .isLength({ max: 120 }).withMessage('Name must be 120 characters or fewer.'),
+  body('phone')
+    .optional({ nullable: true })
+    .isString().withMessage('Phone must be text.')
+    .bail()
+    .trim()
+    .isLength({ max: 32 }).withMessage('Phone must be 32 characters or fewer.')
+];
+
+module.exports = { registerValidators, loginValidators, updateCustomerProfileValidators };

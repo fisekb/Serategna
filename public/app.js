@@ -59,11 +59,15 @@
 
     const cachedUser = window.api.getCachedUser();
     const name = cachedUser?.name || 'Your account';
-    if (cachedUser?.role === 'admin') {
-      const nav = document.querySelector('.primary-nav');
-      if (nav && !nav.querySelector('a[href="/admin.html"]')) {
-        nav.insertAdjacentHTML('beforeend', '<a href="/admin.html">Admin</a>');
-      }
+    const nav = document.querySelector('.primary-nav');
+    if (nav) {
+      const links = cachedUser?.role === 'worker'
+        ? [['/job-offers.html', 'Find job'], ['/my-bookings.html', 'My bookings'], ['/worker-profile.html', 'My profile']]
+        : cachedUser?.role === 'customer'
+          ? [['/', 'Find workers'], ['/my-bookings.html', 'My bookings'], ['/my-jobs.html', 'Post a job'], ['/customer-profile.html', 'My profile']]
+          : [['/', 'Find workers'], ['/my-bookings.html', 'My bookings'], ['/worker-profile.html', 'My profile']];
+      if (cachedUser?.role === 'admin') links.push(['/admin.html', 'Admin']);
+      nav.innerHTML = links.map(([href, label]) => `<a href="${href}">${label}</a>`).join('');
     }
     if (window.api.getToken()) {
       account.innerHTML = `<span class="account-label">${escapeHtml(name)}</span><button class="button button--quiet button--small" type="button" data-logout>Log out</button>`;

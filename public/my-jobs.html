@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#087f70">
+  <title>Post a job — Serategna</title>
+  <link rel="stylesheet" href="/styles.css">
+  <script defer src="/api.js"></script>
+  <script defer src="/app.js"></script>
+  <script defer src="/my-jobs-page.js"></script>
+</head>
+<body>
+  <header class="site-header"><div class="nav-wrap"><a class="brand" href="/"><span class="brand-mark">S</span> Serategna</a><nav class="primary-nav" aria-label="Main navigation"><a href="/">Find workers</a><a href="/my-bookings.html">My bookings</a><a href="/my-jobs.html">Post a job</a><a href="/customer-profile.html">My profile</a></nav><div class="account-area" data-account></div></div></header>
+  <main class="container page-shell">
+    <span class="eyebrow">Find the right help</span>
+    <h1>Post a job</h1>
+    <p class="lead">Share the skill, location, and hourly rate you have in mind. Local workers can browse your offer.</p>
+    <div id="page-message" data-page-message class="notice" role="status" hidden></div>
+    <section class="panel">
+      <div id="form-message" class="notice" role="alert" hidden></div>
+      <form id="job-offer-form">
+        <div class="form-grid">
+          <div class="field"><label for="skillId">Wished primary skill</label><select id="skillId" name="skillId" required><option value="">Choose a skill</option></select></div>
+          <div class="field"><label for="hourlyRate">Hourly rate</label><input id="hourlyRate" name="hourlyRate" type="number" min="0" step="0.01" inputmode="decimal" required></div>
+          <div class="field"><label for="city">City</label><input id="city" name="city" maxlength="120" autocomplete="address-level2" required></div>
+          <div class="field"><label for="area">Area <span class="helper-text">(optional)</span></label><input id="area" name="area" maxlength="120" autocomplete="address-level3"></div>
+          <div class="field field--full"><label for="description">Description</label><textarea id="description" name="description" maxlength="5000" placeholder="Describe the job and the work you need done" required></textarea></div>
+        </div>
+        <div class="form-actions"><button id="post-job" class="button button--primary" type="submit">Post job</button></div>
+      </form>
+    </section>
+    <section class="section-stack" aria-labelledby="my-jobs-heading">
+      <div class="section-heading"><div><span class="eyebrow">Your posts</span><h2 id="my-jobs-heading">My job offers</h2></div></div>
+      <div id="my-job-offers" class="results-grid" aria-live="polite"><div class="loading-state">Loading your job offers…</div></div>
+    </section>
+  </main>
+  <footer class="site-footer">Serategna · Connecting local talent with local needs</footer>
+</body>
+</html>

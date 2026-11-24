@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (bookings.length === 0) {
         list.innerHTML = user.role === 'customer'
           ? '<div class="empty-state"><h3>No bookings yet</h3><p>Find a local professional and send your first request.</p><a class="button button--primary" href="/">Find workers</a></div>'
-          : '<div class="empty-state"><h3>No assigned bookings yet</h3><p>New requests will appear here.</p><a class="button button--quiet" href="/worker-profile.html">View worker profile</a></div>';
+          : '<div class="empty-state"><h3>No assigned bookings yet</h3><p>New requests will appear here.</p><a class="button button--quiet" href="/worker-profile.html">My profile</a></div>';
         return;
       }
 

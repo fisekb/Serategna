@@ -93,6 +93,7 @@ input:focus, select:focus, textarea:focus { border-color: var(--brand); box-shad
 .helper-text { color: var(--muted); font-size: .9rem; }
 
 .profile-layout { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 25px; align-items: start; }
+.profile-panel { max-width: 720px; }
 .side-note { padding: 21px; border-radius: 17px; background: var(--mint); color: #31524b; }
 .detail-layout { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(280px, .7fr); gap: 22px; align-items: start; }
 .detail-card { padding: 26px; }

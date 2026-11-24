@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#087f70">
+  <title>My profile — Serategna</title>
+  <link rel="stylesheet" href="/styles.css">
+  <script defer src="/api.js"></script>
+  <script defer src="/app.js"></script>
+  <script defer src="/customer-profile-page.js"></script>
+</head>
+<body>
+  <header class="site-header"><div class="nav-wrap"><a class="brand" href="/"><span class="brand-mark">S</span> Serategna</a><nav class="primary-nav" aria-label="Main navigation"><a href="/">Find workers</a><a href="/my-bookings.html">My bookings</a><a href="/my-jobs.html">Post a job</a><a href="/customer-profile.html">My profile</a></nav><div class="account-area" data-account></div></div></header>
+  <main class="container page-shell">
+    <span class="eyebrow">Your account</span>
+    <h1>My profile</h1>
+    <p class="lead">Review and update the details workers can use to recognize your account.</p>
+    <div id="page-message" data-page-message class="notice" role="status" hidden></div>
+    <section class="panel profile-panel">
+      <div id="form-message" class="notice" role="alert" hidden></div>
+      <div id="profile-loading" class="loading-state">Loading your profile…</div>
+      <form id="customer-profile-form" hidden>
+        <div class="form-grid">
+          <div class="field"><label for="name">Name</label><input id="name" name="name" maxlength="120" autocomplete="name" required></div>
+          <div class="field"><label for="email">Email</label><input id="email" name="email" type="email" readonly></div>
+          <div class="field"><label for="phone">Phone <span class="helper-text">(optional)</span></label><input id="phone" name="phone" type="tel" maxlength="32" autocomplete="tel"></div>
+        </div>
+        <div class="form-actions"><button id="save-profile" class="button button--primary" type="submit">Save changes</button></div>
+      </form>
+    </section>
+  </main>
+  <footer class="site-footer">Serategna · Your skills make a difference</footer>
+</body>
+</html>

@@ -67,4 +67,17 @@ const getCurrentUser = asyncHandler(async (req, res) => res.status(200).json({
   data: { user: toPublicUser(req.user) }
 }));
 
-module.exports = { register, login, getCurrentUser };
+const updateCurrentUser = asyncHandler(async (req, res) => {
+  await req.user.update({
+    name: req.body.name,
+    phone: req.body.phone || null
+  });
+
+  return res.status(200).json({
+    success: true,
+    message: 'Your profile was updated successfully.',
+    data: { user: toPublicUser(req.user) }
+  });
+});
+
+module.exports = { register, login, getCurrentUser, updateCurrentUser };
