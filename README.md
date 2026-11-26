@@ -106,6 +106,7 @@ All API routes are prefixed with `/api`. Successful responses use `{ "success": 
 | `PATCH`  | `/api/jobs/:id/accept`            | Worker             | Accept an open customer offer; only one worker can accept each offer                                        |
 | `POST`   | `/api/bookings`                  | Customer           | Request a booking with an approved worker                                                                    |
 | `GET`    | `/api/bookings/my`               | Customer or worker | List bookings belonging to the signed-in account                                                             |
+| `GET`    | `/api/bookings/:id/worker-contact` | Customer           | Get the assigned worker's profile and phone number for an accepted booking                                  |
 | `PATCH`  | `/api/bookings/:id/status`       | Customer or worker | Cancel your own booking or transition an assigned booking                                                    |
 | `POST`   | `/api/reviews`                   | Customer           | Review a completed booking you own (one review per booking)                                                  |
 | `GET`    | `/api/admin/users`               | Admin              | List users without password hashes                                                                           |
@@ -116,7 +117,7 @@ All API routes are prefixed with `/api`. Successful responses use `{ "success": 
 ### Booking and review notes
 
 - `POST /api/bookings` expects `workerId` to be the worker's **User ID**, because the booking foreign key references `Users`. In worker search results this value is available as `data.workers[].user.id`.
-- New bookings start in `pending` status. Workers can accept/reject pending bookings and complete accepted bookings. Customers can cancel their own pending or accepted bookings.
+- New bookings start in `pending` status. Workers can accept/reject pending bookings and complete accepted bookings. Customers can cancel their own pending bookings, but cannot cancel after a worker accepts. For accepted bookings, customers can choose Pay now (payment integration not yet configured) or Pay later to reveal the worker's profile and phone number.
 - Reviews can only be created by the booking's customer after the booking is completed. The database enforces one review per booking.
 - Customers can update their own name and phone number and post job offers. Workers can browse all offers; job offer fields and skill relationships are stored through the Sequelize migration.
 - Accepting an offer records the worker and prevents the customer from editing or deleting that offer. The acceptance transaction locks the offer row so two workers cannot accept the same offer concurrently.

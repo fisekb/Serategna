@@ -19,6 +19,15 @@ const listMyBookings = asyncHandler(async (req, res) => {
   });
 });
 
+const getBookingWorkerContact = asyncHandler(async (req, res) => {
+  const worker = await bookingsService.getAcceptedBookingWorkerContact(req.user.id, Number(req.params.id));
+  return res.status(200).json({
+    success: true,
+    message: 'Worker contact retrieved successfully.',
+    data: { worker }
+  });
+});
+
 const updateBookingStatus = asyncHandler(async (req, res) => {
   const booking = await bookingsService.updateBookingStatus(req.user, Number(req.params.id), req.body.status);
   return res.status(200).json({
@@ -28,4 +37,4 @@ const updateBookingStatus = asyncHandler(async (req, res) => {
   });
 });
 
-module.exports = { createBooking, listMyBookings, updateBookingStatus };
+module.exports = { createBooking, listMyBookings, getBookingWorkerContact, updateBookingStatus };

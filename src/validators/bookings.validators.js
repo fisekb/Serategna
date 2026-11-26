@@ -38,4 +38,4 @@ const updateBookingStatusValidators = [
     .withMessage('status must be accepted, rejected, completed, or cancelled.')
 ];
 
-module.exports = { createBookingValidators, updateBookingStatusValidators };
+module.exports = { createBookingValidators, bookingIdValidator, updateBookingStatusValidators };

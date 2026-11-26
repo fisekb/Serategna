@@ -24,6 +24,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       list.querySelectorAll('[data-next-status]').forEach((button) => {
         button.addEventListener('click', () => updateStatus(button.dataset.bookingId, button.dataset.nextStatus, button));
       });
+      list.querySelectorAll('[data-pay-later]').forEach((button) => {
+        button.addEventListener('click', () => showWorkerContact(button.dataset.payLater, button));
+      });
     } catch (error) {
       list.innerHTML = '';
       ui.showMessage(message, error.message, 'error');
@@ -41,11 +44,33 @@ document.addEventListener('DOMContentLoaded', async () => {
       actions = `<button class="button button--primary button--small" data-booking-id="${ui.escapeHtml(booking.id)}" data-next-status="accepted">Accept</button><button class="button button--quiet button--small" data-booking-id="${ui.escapeHtml(booking.id)}" data-next-status="rejected">Decline</button>`;
     } else if (user.role === 'worker' && status === 'accepted') {
       actions = `<button class="button button--primary button--small" data-booking-id="${ui.escapeHtml(booking.id)}" data-next-status="completed">Mark complete</button>`;
-    } else if (user.role === 'customer' && ['pending', 'accepted'].includes(status)) {
+    } else if (user.role === 'customer' && status === 'pending') {
       actions = `<button class="button button--quiet button--small" data-booking-id="${ui.escapeHtml(booking.id)}" data-next-status="cancelled">Cancel booking</button>`;
+    } else if (user.role === 'customer' && status === 'accepted') {
+      actions = `<button class="button button--primary button--small" type="button">Pay now</button><button class="button button--quiet button--small" type="button" data-pay-later="${ui.escapeHtml(booking.id)}">Pay later</button>`;
     }
 
-    return `<article class="card booking-card"><div><div class="worker-top"><div><span class="eyebrow">Booking #${ui.escapeHtml(booking.id)}</span><h3>${ui.escapeHtml(booking.description)}</h3></div><span class="status status--${ui.escapeHtml(status)}">${ui.escapeHtml(status)}</span></div><div class="booking-info"><span><strong>${ui.escapeHtml(otherLabel)}:</strong> ${ui.escapeHtml(otherParty || 'Account')}</span><span><strong>Scheduled:</strong> ${ui.escapeHtml(ui.formatDate(booking.scheduledDate))}</span><span><strong>Address:</strong> ${ui.escapeHtml(location)}</span></div></div><div class="button-row">${actions}</div></article>`;
+    return `<article class="card booking-card"><div><div class="worker-top"><div><span class="eyebrow">Booking #${ui.escapeHtml(booking.id)}</span><h3>${ui.escapeHtml(booking.description)}</h3></div><span class="status status--${ui.escapeHtml(status)}">${ui.escapeHtml(status)}</span></div><div class="booking-info"><span><strong>${ui.escapeHtml(otherLabel)}:</strong> ${ui.escapeHtml(otherParty || 'Account')}</span><span><strong>Scheduled:</strong> ${ui.escapeHtml(ui.formatDate(booking.scheduledDate))}</span><span><strong>Address:</strong> ${ui.escapeHtml(location)}</span></div><div data-worker-contact="${ui.escapeHtml(booking.id)}"></div></div><div class="button-row">${actions}</div></article>`;
+  }
+
+  async function showWorkerContact(bookingId, button) {
+    ui.setLoading(button, true, 'Loading…');
+    ui.showMessage(message, '', 'info');
+    try {
+      const response = await api.get(`/bookings/${encodeURIComponent(bookingId)}/worker-contact`);
+      const worker = response.data.worker;
+      const profile = worker.workerProfile;
+      const contact = document.querySelector(`[data-worker-contact="${Number(bookingId)}"]`);
+      if (!contact) return;
+      const skill = profile?.skill?.name;
+      const location = [profile?.area, profile?.city].filter(Boolean).map(ui.escapeHtml).join(', ');
+      contact.innerHTML = `<section class="side-note booking-worker-contact"><h3>Worker profile</h3><p><strong>${ui.escapeHtml(worker.name)}</strong></p><p>Phone: ${worker.phone ? `<a href="tel:${ui.escapeHtml(worker.phone)}">${ui.escapeHtml(worker.phone)}</a>` : 'Not provided'}</p>${skill ? `<p>Primary skill: ${ui.escapeHtml(skill)}</p>` : ''}${location ? `<p>Location: ${location}</p>` : ''}${profile?.experienceYears !== null && profile?.experienceYears !== undefined ? `<p>Experience: ${ui.escapeHtml(profile.experienceYears)} years</p>` : ''}${profile?.bio ? `<p>${ui.escapeHtml(profile.bio)}</p>` : ''}</section>`;
+      button.disabled = true;
+      button.textContent = 'Worker details shown';
+    } catch (error) {
+      ui.showMessage(message, error.message, 'error');
+      ui.setLoading(button, false);
+    }
   }
 
   async function updateStatus(bookingId, status, button) {

@@ -8,6 +8,7 @@ jest.mock('../src/models', () => ({
   WorkerProfile: { findOne: jest.fn() },
   Booking: {
     create: jest.fn(),
+    findOne: jest.fn(),
     findByPk: jest.fn(),
     findAll: jest.fn()
   },
@@ -339,5 +340,60 @@ describe('booking permissions', () => {
 
     expect(response.status).toBe(403);
     expect(Booking.findByPk).not.toHaveBeenCalled();
+  });
+
+  test('customers cannot cancel a booking after the worker accepts it', async () => {
+    User.findByPk.mockResolvedValue(makeUser({ id: 511, role: 'customer' }));
+    const acceptedBooking = {
+      id: 99,
+      customerId: 511,
+      workerId: 512,
+      status: 'accepted',
+      update: jest.fn()
+    };
+    Booking.findByPk.mockResolvedValue(acceptedBooking);
+    sequelize.transaction.mockImplementation((callback) => callback({ LOCK: { UPDATE: 'UPDATE' } }));
+
+    const response = await request(app)
+      .patch('/api/bookings/99/status')
+      .set('Authorization', bearer({ id: 511 }))
+      .send({ status: 'cancelled' });
+
+    expect(response.status).toBe(409);
+    expect(acceptedBooking.update).not.toHaveBeenCalled();
+  });
+
+  test('customers can get worker profile and phone only for their accepted booking', async () => {
+    const customer = makeUser({ id: 521, role: 'customer' });
+    User.findByPk.mockResolvedValue(customer);
+    Booking.findOne.mockResolvedValue({
+      worker: {
+        id: 522,
+        name: 'Worker Name',
+        phone: '555-0123',
+        workerProfile: {
+          city: 'Addis Ababa',
+          area: 'Bole',
+          hourlyRate: '200.00',
+          experienceYears: 3,
+          bio: 'Experienced electrician',
+          skill: { name: 'Electrician' }
+        }
+      }
+    });
+
+    const response = await request(app)
+      .get('/api/bookings/88/worker-contact')
+      .set('Authorization', bearer({ id: 521 }));
+
+    expect(response.status).toBe(200);
+    expect(response.body.data.worker).toMatchObject({
+      name: 'Worker Name',
+      phone: '555-0123',
+      workerProfile: { city: 'Addis Ababa', skill: { name: 'Electrician' } }
+    });
+    expect(Booking.findOne).toHaveBeenCalledWith(expect.objectContaining({
+      where: { id: 88, customerId: 521, status: 'accepted' }
+    }));
   });
 });

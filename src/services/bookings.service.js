@@ -1,4 +1,4 @@
-const { Booking, User, WorkerProfile, sequelize } = require('../models');
+const { Booking, User, WorkerProfile, Skill, sequelize } = require('../models');
 const AppError = require('../utils/AppError');
 
 const bookingIncludes = [
@@ -48,6 +48,29 @@ async function listMyBookings(user) {
   });
 }
 
+async function getAcceptedBookingWorkerContact(customerId, bookingId) {
+  const booking = await Booking.findOne({
+    where: { id: bookingId, customerId, status: 'accepted' },
+    attributes: ['id', 'workerId'],
+    include: [{
+      model: User,
+      as: 'worker',
+      attributes: ['id', 'name', 'phone'],
+      include: [{
+        model: WorkerProfile,
+        as: 'workerProfile',
+        attributes: ['city', 'area', 'hourlyRate', 'experienceYears', 'bio'],
+        include: [{ model: Skill, as: 'skill', attributes: ['name'] }]
+      }]
+    }]
+  });
+
+  if (!booking) {
+    throw new AppError('Accepted booking not found.', 404);
+  }
+  return booking.worker;
+}
+
 function assertAllowedTransition(role, targetStatus) {
   if (role === 'worker') {
     if (!['accepted', 'rejected', 'completed'].includes(targetStatus)) {
@@ -58,7 +81,7 @@ function assertAllowedTransition(role, targetStatus) {
 
   if (role === 'customer') {
     if (targetStatus !== 'cancelled') {
-      throw new AppError('Customers may only cancel bookings.', 403);
+      throw new AppError('Customers may only cancel pending bookings.', 403);
     }
     return;
   }
@@ -89,7 +112,7 @@ async function updateBookingStatus(user, bookingId, targetStatus) {
 
     const allowedNextStatuses = {
       pending: user.role === 'worker' ? ['accepted', 'rejected'] : ['cancelled'],
-      accepted: user.role === 'worker' ? ['completed'] : ['cancelled'],
+      accepted: user.role === 'worker' ? ['completed'] : [],
       rejected: [],
       completed: [],
       cancelled: []
@@ -104,4 +127,4 @@ async function updateBookingStatus(user, bookingId, targetStatus) {
   });
 }
 
-module.exports = { createBooking, listMyBookings, updateBookingStatus };
+module.exports = { createBooking, listMyBookings, getAcceptedBookingWorkerContact, updateBookingStatus };
