@@ -28,6 +28,15 @@ const getBookingWorkerContact = asyncHandler(async (req, res) => {
   });
 });
 
+const choosePayLater = asyncHandler(async (req, res) => {
+  const booking = await bookingsService.choosePayLater(req.user.id, Number(req.params.id));
+  return res.status(200).json({
+    success: true,
+    message: 'Cash payment selected.',
+    data: { booking }
+  });
+});
+
 const updateBookingStatus = asyncHandler(async (req, res) => {
   const booking = await bookingsService.updateBookingStatus(req.user, Number(req.params.id), req.body.status);
   return res.status(200).json({
@@ -37,4 +46,10 @@ const updateBookingStatus = asyncHandler(async (req, res) => {
   });
 });
 
-module.exports = { createBooking, listMyBookings, getBookingWorkerContact, updateBookingStatus };
+module.exports = {
+  createBooking,
+  listMyBookings,
+  getBookingWorkerContact,
+  choosePayLater,
+  updateBookingStatus
+};

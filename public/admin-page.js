@@ -2,9 +2,18 @@ document.addEventListener('DOMContentLoaded', async () => {
   const pageMessage = document.querySelector('#page-message');
   const workerList = document.querySelector('#worker-list');
   const userList = document.querySelector('#user-list');
+  const submissionList = document.querySelector('#submission-list');
+  const unlinkedPaymentList = document.querySelector('#unlinked-payment-list');
+  const unparsedSmsList = document.querySelector('#unparsed-sms-list');
+  const payoutList = document.querySelector('#payout-list');
 
   const admin = await ui.requireRole('admin');
-  if (!admin) return;
+  if (!admin) {
+    document.querySelectorAll('[data-admin-tab], [data-admin-panel]').forEach((element) => {
+      element.hidden = true;
+    });
+    return;
+  }
 
   const tabs = [...document.querySelectorAll('[data-admin-tab]')];
   tabs.forEach((tab) => {
@@ -86,6 +95,115 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
+  function formatAmount(amountSantim) {
+    if (amountSantim === null || amountSantim === undefined) return 'Not set';
+    const amount = BigInt(amountSantim);
+    const sign = amount < 0n ? '-' : '';
+    const absolute = amount < 0n ? -amount : amount;
+    const birr = (absolute / 100n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    const santim = (absolute % 100n).toString().padStart(2, '0');
+    return `${sign}${birr}.${santim}`;
+  }
+
+  function amountBirrToSantim(value) {
+    const match = String(value).trim().match(/^(\d+)(?:\.(\d{1,2}))?$/);
+    if (!match) return null;
+    const amount = BigInt(match[1]) * 100n + BigInt((match[2] || '').padEnd(2, '0') || '0');
+    if (amount < 1n || amount > 9223372036854775807n) return null;
+    return amount.toString();
+  }
+
+  async function loadPaymentReview() {
+    submissionList.innerHTML = '<div class="loading-state">Loading payment submissions…</div>';
+    try {
+      const result = await api.get('/admin/payments/review');
+      const { submissions, unlinkedPayments, unparsedSms } = result.data;
+      document.querySelector('#submission-count').textContent = `${submissions.length} pending`;
+      document.querySelector('#unlinked-count').textContent = `${unlinkedPayments.length} payment${unlinkedPayments.length === 1 ? '' : 's'}`;
+      document.querySelector('#unparsed-count').textContent = `${unparsedSms.length} message${unparsedSms.length === 1 ? '' : 's'}`;
+
+      submissionList.innerHTML = submissions.length
+        ? submissions.map((submission) => {
+          const booking = submission.booking || {};
+          const payment = submission.payment;
+          const submissionId = ui.escapeHtml(submission.id);
+          const received = payment
+            ? `<span><strong>Received:</strong> ETB ${ui.escapeHtml(formatAmount(payment.amountSantim))}${payment.payerName ? ` from ${ui.escapeHtml(payment.payerName)}` : ''}${payment.payerLast4 ? ` (…${ui.escapeHtml(payment.payerLast4)})` : ''}</span><span><strong>Difference:</strong> ETB ${ui.escapeHtml(formatAmount(submission.amountDifferenceSantim))}</span>`
+            : `<label class="field admin-amount-field" for="manual-amount-${submissionId}">Amount confirmed in Telebirr history (ETB)<input id="manual-amount-${submissionId}" data-manual-amount="${submissionId}" type="number" min="0.01" step="0.01" inputmode="decimal" required></label>`;
+          return `<article class="admin-row admin-review-card">
+            <div class="admin-row-info">
+              <strong>Booking #${ui.escapeHtml(booking.id)} · ${ui.escapeHtml(booking.customer?.name || 'Customer')}</strong>
+              <span>Worker: ${ui.escapeHtml(booking.worker?.name || 'Worker')} · ${ui.escapeHtml(booking.status || 'unknown')} booking</span>
+              <span>Transaction ID: ${ui.escapeHtml(submission.txId)}</span>
+              <span><strong>Agreed:</strong> ETB ${ui.escapeHtml(formatAmount(booking.amountSantim))}</span>
+              ${received}
+            </div>
+            <div class="admin-row-actions">
+              <button class="button button--primary button--small" type="button" data-payment-action="approve" data-submission-id="${submissionId}">Approve</button>
+              <button class="button button--danger button--small" type="button" data-payment-action="reject" data-submission-id="${submissionId}">Reject</button>
+            </div>
+          </article>`;
+        }).join('')
+        : '<div class="empty-state">No pending payment submissions.</div>';
+
+      unlinkedPaymentList.innerHTML = unlinkedPayments.length
+        ? unlinkedPayments.map((payment) => `<article class="admin-row admin-review-card">
+          <div class="admin-row-info">
+            <strong>Transaction ID: ${ui.escapeHtml(payment.txId)}</strong>
+            <span>Received: ETB ${ui.escapeHtml(formatAmount(payment.amountSantim))}${payment.payerName ? ` from ${ui.escapeHtml(payment.payerName)}` : ''}${payment.payerLast4 ? ` (…${ui.escapeHtml(payment.payerLast4)})` : ''}</span>
+            <span>${ui.escapeHtml(ui.formatDate(payment.paidAt))}</span>
+          </div>
+        </article>`).join('')
+        : '<div class="empty-state">No unlinked Telebirr payments.</div>';
+
+      unparsedSmsList.innerHTML = unparsedSms.length
+        ? unparsedSms.map((sms) => `<article class="admin-row admin-review-card">
+          <div class="admin-row-info">
+            <strong>SMS received ${ui.escapeHtml(ui.formatDate(sms.receivedAt))}</strong>
+            <span class="admin-sms-body">${ui.escapeHtml(sms.body)}</span>
+          </div>
+        </article>`).join('')
+        : '<div class="empty-state">No unparsed SMS messages.</div>';
+    } catch (error) {
+      submissionList.innerHTML = '';
+      unlinkedPaymentList.innerHTML = '';
+      unparsedSmsList.innerHTML = '';
+      ui.showMessage(pageMessage, error.message, 'error');
+    }
+  }
+
+  async function loadPayouts() {
+    payoutList.innerHTML = '<div class="loading-state">Loading paid bookings…</div>';
+    try {
+      const result = await api.get('/admin/payments/paid-bookings');
+      const bookings = result.data.bookings;
+      document.querySelector('#payout-count').textContent = `${bookings.length} booking${bookings.length === 1 ? '' : 's'}`;
+      payoutList.innerHTML = bookings.length
+        ? bookings.map((booking) => {
+          const bookingId = ui.escapeHtml(booking.id);
+          const paidOut = Boolean(booking.workerPaidOutAt);
+          return `<article class="admin-row">
+            <div class="admin-row-info">
+              <strong>Booking #${bookingId} · ${ui.escapeHtml(booking.worker?.name || 'Worker')}</strong>
+              <span>${ui.escapeHtml(booking.description)}</span>
+              <span>Booking amount: ETB ${ui.escapeHtml(formatAmount(booking.amountSantim))} · Received: ETB ${ui.escapeHtml(formatAmount(booking.telebirrPayment?.amountSantim))}</span>
+              <span>Customer payment received ${ui.escapeHtml(ui.formatDate(booking.paidAt))}</span>
+              ${paidOut ? `<span>Worker paid ${ui.escapeHtml(ui.formatDate(booking.workerPaidOutAt))}</span>` : '<span>Worker payout not yet recorded</span>'}
+            </div>
+            <div class="admin-row-actions">
+              ${paidOut
+                ? '<span class="status status--completed">Worker paid</span>'
+                : `<button class="button button--primary button--small" type="button" data-payout-booking-id="${bookingId}">Mark worker paid</button>`}
+            </div>
+          </article>`;
+        }).join('')
+        : '<div class="empty-state">No Telebirr-paid bookings yet.</div>';
+    } catch (error) {
+      payoutList.innerHTML = '';
+      ui.showMessage(pageMessage, error.message, 'error');
+    }
+  }
+
   workerList.addEventListener('click', async (event) => {
     const button = event.target.closest('[data-worker-id]');
     if (!button) return;
@@ -116,5 +234,52 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
-  await Promise.all([loadWorkers(), loadUsers()]);
+  submissionList.addEventListener('click', async (event) => {
+    const button = event.target.closest('[data-payment-action]');
+    if (!button) return;
+    const submissionId = button.dataset.submissionId;
+    const action = button.dataset.paymentAction;
+    if (action === 'reject' && !window.confirm('Reject this payment submission?')) return;
+
+    const payload = {};
+    if (action === 'approve') {
+      const amountInput = submissionList.querySelector(`[data-manual-amount="${submissionId}"]`);
+      if (amountInput) {
+        const amountSantim = amountBirrToSantim(amountInput.value);
+        if (!amountSantim) {
+          amountInput.setCustomValidity('Enter a positive amount with up to two decimal places.');
+          amountInput.reportValidity();
+          return;
+        }
+        amountInput.setCustomValidity('');
+        payload.amountSantim = amountSantim;
+      }
+    }
+
+    ui.setLoading(button, true, 'Saving…');
+    try {
+      await api.patch(`/admin/payment-submissions/${encodeURIComponent(submissionId)}/${action}`, payload);
+      ui.showMessage(pageMessage, action === 'approve' ? 'Payment approved.' : 'Payment submission rejected.', 'success');
+      await Promise.all([loadPaymentReview(), loadPayouts()]);
+    } catch (error) {
+      ui.showMessage(pageMessage, error.message, 'error');
+      ui.setLoading(button, false);
+    }
+  });
+
+  payoutList.addEventListener('click', async (event) => {
+    const button = event.target.closest('[data-payout-booking-id]');
+    if (!button) return;
+    ui.setLoading(button, true, 'Saving…');
+    try {
+      await api.patch(`/admin/bookings/${encodeURIComponent(button.dataset.payoutBookingId)}/worker-paid`, {});
+      ui.showMessage(pageMessage, 'Worker payout recorded.', 'success');
+      await loadPayouts();
+    } catch (error) {
+      ui.showMessage(pageMessage, error.message, 'error');
+      ui.setLoading(button, false);
+    }
+  });
+
+  await Promise.all([loadWorkers(), loadUsers(), loadPaymentReview(), loadPayouts()]);
 });

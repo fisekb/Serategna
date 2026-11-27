@@ -7,6 +7,9 @@ const WorkerProfile = require('./WorkerProfile')(sequelize, DataTypes);
 const Booking = require('./Booking')(sequelize, DataTypes);
 const Review = require('./Review')(sequelize, DataTypes);
 const JobOffer = require('./JobOffer')(sequelize, DataTypes);
+const TelebirrPayment = require('./TelebirrPayment')(sequelize, DataTypes);
+const PaymentSubmission = require('./PaymentSubmission')(sequelize, DataTypes);
+const SmsLog = require('./SmsLog')(sequelize, DataTypes);
 
 // Keep relationship definitions in one place so models share consistent aliases and delete rules.
 User.hasOne(WorkerProfile, {
@@ -98,6 +101,44 @@ Booking.belongsTo(User, {
   onUpdate: 'CASCADE'
 });
 
+Booking.hasOne(TelebirrPayment, {
+  as: 'telebirrPayment',
+  foreignKey: 'bookingId',
+  onDelete: 'SET NULL',
+  onUpdate: 'CASCADE'
+});
+TelebirrPayment.belongsTo(Booking, {
+  as: 'booking',
+  foreignKey: 'bookingId',
+  onDelete: 'SET NULL',
+  onUpdate: 'CASCADE'
+});
+
+Booking.hasMany(PaymentSubmission, {
+  as: 'paymentSubmissions',
+  foreignKey: 'bookingId',
+  onDelete: 'CASCADE',
+  onUpdate: 'CASCADE'
+});
+PaymentSubmission.belongsTo(Booking, {
+  as: 'booking',
+  foreignKey: 'bookingId',
+  onDelete: 'CASCADE',
+  onUpdate: 'CASCADE'
+});
+User.hasMany(PaymentSubmission, {
+  as: 'paymentSubmissions',
+  foreignKey: 'userId',
+  onDelete: 'RESTRICT',
+  onUpdate: 'CASCADE'
+});
+PaymentSubmission.belongsTo(User, {
+  as: 'user',
+  foreignKey: 'userId',
+  onDelete: 'RESTRICT',
+  onUpdate: 'CASCADE'
+});
+
 Booking.hasOne(Review, {
   as: 'review',
   foreignKey: 'bookingId',
@@ -135,4 +176,16 @@ Review.belongsTo(User, {
   onUpdate: 'CASCADE'
 });
 
-module.exports = { sequelize, Sequelize, User, Skill, WorkerProfile, Booking, Review, JobOffer };
+module.exports = {
+  sequelize,
+  Sequelize,
+  User,
+  Skill,
+  WorkerProfile,
+  Booking,
+  Review,
+  JobOffer,
+  TelebirrPayment,
+  PaymentSubmission,
+  SmsLog
+};

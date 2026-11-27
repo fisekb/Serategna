@@ -71,6 +71,32 @@ async function getAcceptedBookingWorkerContact(customerId, bookingId) {
   return booking.worker;
 }
 
+async function choosePayLater(customerId, bookingId) {
+  return sequelize.transaction(async (transaction) => {
+    const booking = await Booking.findByPk(bookingId, {
+      transaction,
+      lock: transaction.LOCK.UPDATE
+    });
+    if (!booking || Number(booking.customerId) !== Number(customerId)) {
+      throw new AppError('Booking not found.', 404);
+    }
+    if (
+      booking.status !== 'accepted'
+      || booking.paymentStatus !== 'unpaid'
+      || booking.paymentMethod
+      || booking.paidAt
+    ) {
+      throw new AppError('Only accepted, unpaid bookings can be set for cash payment.', 409);
+    }
+
+    await booking.update({
+      paymentMethod: 'cash',
+      paymentStatus: 'cash_due'
+    }, { transaction });
+    return Booking.findByPk(bookingId, { transaction });
+  });
+}
+
 function assertAllowedTransition(role, targetStatus) {
   if (role === 'worker') {
     if (!['accepted', 'rejected', 'completed'].includes(targetStatus)) {
@@ -127,4 +153,10 @@ async function updateBookingStatus(user, bookingId, targetStatus) {
   });
 }
 
-module.exports = { createBooking, listMyBookings, getAcceptedBookingWorkerContact, updateBookingStatus };
+module.exports = {
+  createBooking,
+  listMyBookings,
+  getAcceptedBookingWorkerContact,
+  choosePayLater,
+  updateBookingStatus
+};

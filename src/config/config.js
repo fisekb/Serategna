@@ -11,6 +11,11 @@ const local = {
   port: Number(process.env.DB_PORT || 5432)
 };
 
+const test = {
+  ...local,
+  database: process.env.DB_TEST_NAME || (process.env.DB_NAME && `${process.env.DB_NAME}_test`)
+};
+
 const remote = {
   ...base,
   use_env_variable: 'DATABASE_URL',
@@ -19,7 +24,7 @@ const remote = {
 
 module.exports = {
   development: local,
-  test: local,
+  test,
   production: remote
 };
 

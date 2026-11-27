@@ -7,6 +7,7 @@ const bookingsRoutes = require('./bookings.routes');
 const reviewsRoutes = require('./reviews.routes');
 const adminRoutes = require('./admin.routes');
 const jobOffersRoutes = require('./job-offers.routes');
+const telebirrRoutes = require('./telebirr.routes');
 
 const router = express.Router();
 
@@ -17,6 +18,7 @@ router.use('/bookings', bookingsRoutes);
 router.use('/reviews', reviewsRoutes);
 router.use('/jobs', jobOffersRoutes);
 router.use('/admin', adminRoutes);
+router.use('/telebirr', telebirrRoutes);
 router.use(healthRoutes);
 
 module.exports = router;

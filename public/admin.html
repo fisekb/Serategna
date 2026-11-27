@@ -14,13 +14,15 @@
   <header class="site-header"><div class="nav-wrap"><a class="brand" href="/"><span class="brand-mark">S</span> Serategna</a><nav class="primary-nav" aria-label="Main navigation"><a href="/">Find workers</a><a href="/my-bookings.html">My bookings</a><a href="/worker-profile.html">My profile</a></nav><div class="account-area" data-account></div></div></header>
   <main class="container page-shell">
     <span class="eyebrow">Administration</span>
-    <h1>Worker and account management</h1>
-    <p class="lead">Review worker profiles and manage account access.</p>
+    <h1>Administration</h1>
+    <p class="lead">Review worker profiles, manage account access, and reconcile Telebirr payments.</p>
     <div id="page-message" data-page-message class="notice" role="status" hidden></div>
 
     <div class="admin-tabs" role="tablist" aria-label="Admin sections">
       <button class="admin-tab is-active" type="button" role="tab" aria-selected="true" data-admin-tab="workers">Workers</button>
       <button class="admin-tab" type="button" role="tab" aria-selected="false" data-admin-tab="users">User accounts</button>
+      <button class="admin-tab" type="button" role="tab" aria-selected="false" data-admin-tab="payments">Payment review</button>
+      <button class="admin-tab" type="button" role="tab" aria-selected="false" data-admin-tab="payouts">Worker payouts</button>
     </div>
 
     <section class="panel admin-section" data-admin-panel="workers" aria-labelledby="workers-heading">
@@ -31,6 +33,20 @@
     <section class="panel admin-section" data-admin-panel="users" aria-labelledby="users-heading" hidden>
       <div class="section-heading"><div><span class="eyebrow">Access control</span><h2 id="users-heading">User accounts</h2></div><span id="user-count" class="helper-text"></span></div>
       <div id="user-list" class="admin-list"><div class="loading-state">Loading users…</div></div>
+    </section>
+
+    <section class="panel admin-section" data-admin-panel="payments" aria-labelledby="payments-heading" hidden>
+      <div class="section-heading"><div><span class="eyebrow">Manual reconciliation</span><h2 id="payments-heading">Pending submissions</h2></div><span id="submission-count" class="helper-text"></span></div>
+      <div id="submission-list" class="admin-list"><div class="loading-state">Loading payment submissions…</div></div>
+      <div class="section-heading"><div><span class="eyebrow">Received but unmatched</span><h2>Unlinked payments</h2></div><span id="unlinked-count" class="helper-text"></span></div>
+      <div id="unlinked-payment-list" class="admin-list"><div class="loading-state">Loading unlinked payments…</div></div>
+      <div class="section-heading"><div><span class="eyebrow">Could not be parsed</span><h2>Unparsed SMS</h2></div><span id="unparsed-count" class="helper-text"></span></div>
+      <div id="unparsed-sms-list" class="admin-list"><div class="loading-state">Loading SMS logs…</div></div>
+    </section>
+
+    <section class="panel admin-section" data-admin-panel="payouts" aria-labelledby="payouts-heading" hidden>
+      <div class="section-heading"><div><span class="eyebrow">Worker settlements</span><h2 id="payouts-heading">Telebirr-paid bookings</h2></div><span id="payout-count" class="helper-text"></span></div>
+      <div id="payout-list" class="admin-list"><div class="loading-state">Loading paid bookings…</div></div>
     </section>
   </main>
   <footer class="site-footer">Serategna · Administration</footer>

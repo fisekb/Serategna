@@ -3,6 +3,8 @@ const { rateLimit } = require('express-rate-limit');
 const apiRateLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   limit: 100,
+  skip: (req) => req.method === 'GET'
+    && /^\/api\/telebirr\/bookings\/\d+\/status$/.test(req.originalUrl.split('?')[0]),
   standardHeaders: 'draft-7',
   legacyHeaders: false,
   message: {
