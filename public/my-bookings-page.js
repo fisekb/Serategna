@@ -67,10 +67,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         actions = '<span class="status status--completed">Paid</span>';
       } else if (paymentStatus === 'cash_due') {
         actions = `<span class="status">Cash due</span><button class="button button--quiet button--small" type="button" data-view-worker-contact="${bookingId}">Show worker contact</button>`;
-      } else if (booking.amountSantim === null || booking.amountSantim === undefined) {
-        actions = '<span class="status">Agreed amount pending</span>';
       } else if (paymentStatus === 'verifying') {
         actions = `<span class="status">Verifying payment</span><button class="button button--primary button--small" type="button" data-pay-now="${bookingId}">Continue payment</button>`;
+      } else if (booking.amountSantim === null || booking.amountSantim === undefined) {
+        actions = `<span class="status">Agreed amount pending</span><button class="button button--primary button--small" type="button" disabled title="Available when the admin sets the agreed amount">Pay now</button><button class="button button--quiet button--small" type="button" data-pay-later="${bookingId}">Pay later</button><span class="helper-text">Pay now will be available when the agreed amount is set.</span>`;
       } else {
         actions = `<button class="button button--primary button--small" type="button" data-pay-now="${bookingId}">Pay now</button><button class="button button--quiet button--small" type="button" data-pay-later="${bookingId}">Pay later</button>`;
       }

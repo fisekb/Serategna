@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const pageMessage = document.querySelector('#page-message');
   const workerList = document.querySelector('#worker-list');
   const userList = document.querySelector('#user-list');
+  const unpricedBookingList = document.querySelector('#unpriced-booking-list');
   const submissionList = document.querySelector('#submission-list');
   const unlinkedPaymentList = document.querySelector('#unlinked-payment-list');
   const unparsedSmsList = document.querySelector('#unparsed-sms-list');
@@ -111,6 +112,37 @@ document.addEventListener('DOMContentLoaded', async () => {
     const amount = BigInt(match[1]) * 100n + BigInt((match[2] || '').padEnd(2, '0') || '0');
     if (amount < 1n || amount > 9223372036854775807n) return null;
     return amount.toString();
+  }
+
+  async function loadUnpricedBookings() {
+    unpricedBookingList.innerHTML = '<div class="loading-state">Loading accepted bookings…</div>';
+    try {
+      const result = await api.get('/admin/bookings/unpriced');
+      const bookings = result.data.bookings;
+      document.querySelector('#unpriced-count').textContent = `${bookings.length} booking${bookings.length === 1 ? '' : 's'}`;
+      unpricedBookingList.innerHTML = bookings.length
+        ? bookings.map((booking) => {
+          const bookingId = ui.escapeHtml(booking.id);
+          return `<article class="admin-row admin-review-card">
+            <div class="admin-row-info">
+              <strong>Booking #${bookingId} · ${ui.escapeHtml(booking.customer?.name || 'Customer')}</strong>
+              <span>Worker: ${ui.escapeHtml(booking.worker?.name || 'Worker')}</span>
+              <span>${ui.escapeHtml(booking.description)}</span>
+              <span>${ui.escapeHtml(booking.address)} · Scheduled ${ui.escapeHtml(ui.formatDate(booking.scheduledDate))}</span>
+            </div>
+            <form class="admin-price-form" data-booking-price-form="${bookingId}">
+              <label class="field" for="booking-amount-${bookingId}">Agreed amount (birr)
+                <input id="booking-amount-${bookingId}" name="amountBirr" type="number" min="0.01" step="0.01" inputmode="decimal" required>
+              </label>
+              <button class="button button--primary button--small" type="submit">Save price</button>
+            </form>
+          </article>`;
+        }).join('')
+        : '<div class="empty-state">No accepted bookings are waiting for a price.</div>';
+    } catch (error) {
+      unpricedBookingList.innerHTML = '';
+      ui.showMessage(pageMessage, error.message, 'error');
+    }
   }
 
   async function loadPaymentReview() {
@@ -234,6 +266,34 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
+  unpricedBookingList.addEventListener('submit', async (event) => {
+    const form = event.target.closest('[data-booking-price-form]');
+    if (!form) return;
+    event.preventDefault();
+
+    const amountInput = form.querySelector('[name="amountBirr"]');
+    const amountSantim = amountBirrToSantim(amountInput.value);
+    if (!amountSantim) {
+      amountInput.setCustomValidity('Enter a positive amount with up to two decimal places.');
+      amountInput.reportValidity();
+      return;
+    }
+    amountInput.setCustomValidity('');
+
+    const button = form.querySelector('button[type="submit"]');
+    ui.setLoading(button, true, 'Saving…');
+    try {
+      await api.patch(`/admin/bookings/${encodeURIComponent(form.dataset.bookingPriceForm)}/amount`, {
+        amountSantim
+      });
+      ui.showMessage(pageMessage, 'Agreed booking amount saved. The customer can now choose how to pay.', 'success');
+      await loadUnpricedBookings();
+    } catch (error) {
+      ui.showMessage(pageMessage, error.message, 'error');
+      ui.setLoading(button, false);
+    }
+  });
+
   submissionList.addEventListener('click', async (event) => {
     const button = event.target.closest('[data-payment-action]');
     if (!button) return;
@@ -281,5 +341,5 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
-  await Promise.all([loadWorkers(), loadUsers(), loadPaymentReview(), loadPayouts()]);
+  await Promise.all([loadWorkers(), loadUsers(), loadUnpricedBookings(), loadPaymentReview(), loadPayouts()]);
 });

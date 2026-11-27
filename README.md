@@ -120,6 +120,7 @@ All API routes are prefixed with `/api`. Successful responses use `{ "success": 
 | `GET`    | `/api/telebirr/bookings/:id/payment-details` | Customer | Get the receiving Telebirr details and server-stored booking amount                                         |
 | `GET`    | `/api/telebirr/bookings/:id/status` | Customer       | Check the payment status of your booking                                                                    |
 | `POST`   | `/api/telebirr/sms`             | SMS gateway secret | Record and match an authenticated SMS forwarded from sender `127`                                           |
+| `GET`    | `/api/admin/bookings/unpriced`  | Admin              | List accepted bookings awaiting an agreed amount                                                            |
 | `PATCH`  | `/api/admin/bookings/:id/amount`| Admin              | Set the agreed booking amount once using `{ "amountSantim": "123450" }`                                     |
 | `GET`    | `/api/admin/payments/review`    | Admin              | List pending submissions, matching received payments, unlinked payments, and unparsed SMS                   |
 | `PATCH`  | `/api/admin/payment-submissions/:id/approve` | Admin | Approve a pending payment; provide `{ "amountSantim": "100" }` when no SMS receipt exists                 |
@@ -137,7 +138,8 @@ All API routes are prefixed with `/api`. Successful responses use `{ "success": 
 - `POST /api/bookings` expects `workerId` to be the worker's **User ID**, because the booking foreign key references `Users`. In worker search results this value is available as `data.workers[].user.id`.
 - New bookings start in `pending` status. Workers can accept/reject pending bookings and complete accepted bookings. Customers can cancel their own pending bookings, but cannot cancel after a worker accepts. Customers can use Pay now on accepted bookings with an agreed amount; the payment panel displays the configured Telebirr account and amount, accepts a transaction ID, and checks verification every five seconds while the page is open. Transaction IDs are uppercased, and submissions are limited to five per booking per hour.
 - Pay later records `paymentMethod: cash` and `paymentStatus: cash_due`, then reveals the worker's profile and phone number. Only the customer who owns an accepted, unpaid booking can choose either payment option.
-- An admin records the fixed agreed booking price through `/api/admin/bookings/:id/amount` as an integer number of santim. The amount is immutable after it is set, and existing bookings keep a null amount until an admin sets it. Payment matching only succeeds when the SMS amount equals that saved amount exactly.
+- In the admin page's **Booking prices** tab, set the agreed total in birr for accepted bookings awaiting a price. The saved value is an integer number of santim via `/api/admin/bookings/:id/amount`; the amount cannot be changed after it is set. Customers then see **Pay now** and **Pay later** in My bookings. Pay now is disabled until an amount is set; Pay later remains available.
+- Payment matching only succeeds when the SMS amount equals the saved agreed amount exactly.
 - The SMS-forwarding service must send `POST /api/telebirr/sms` with `x-sms-secret` and JSON fields `from` and `text`. Authenticated messages from sender `127` are logged, parsed, and matched to customer submissions; other senders are acknowledged but ignored. Configure `SMS_SECRET` with at least 32 random characters.
 - The admin page (`/admin.html`) includes payment review and worker payout tabs. Review a received amount and its difference from the agreed booking amount before approving. If no SMS was received, check Telebirr history and enter the actual amount in birr; approval saves a payment record against the submitted transaction ID so a later SMS delivery cannot reuse it. A transaction ID can only be linked to one booking. Worker payout marking is available only for Telebirr-paid bookings and records the time of payout.
 - Admin API routes use the same active-user JWT authentication and server-side `admin` role authorization as the other `/api/admin` routes. The frontend stores the JWT and sends it in the `Authorization` header (not a cookie), so browser requests do not rely on cookie-based authentication.
@@ -188,6 +190,6 @@ The Express app serves the plain static frontend from `public/`:
 - `/job-offers.html` — Browse customer job offers as a worker
 - `/worker-detail.html?id=<profile-id>` — Worker details, reviews, and booking form
 - `/my-bookings.html` — View and manage your bookings
-- `/admin.html` — Admin-only worker, account, payment review, and payout dashboard
+- `/admin.html` — Admin-only worker, account, booking price, payment review, and payout dashboard
 
 The browser helper in `public/api.js` stores the JWT in `localStorage` and attaches it to protected requests. Avoid using shared or public devices for accounts that authenticate this way; log out when finished.

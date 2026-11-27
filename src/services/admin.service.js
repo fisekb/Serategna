@@ -101,6 +101,24 @@ async function setBookingAmount(bookingId, amountSantim) {
   });
 }
 
+async function listBookingsNeedingPrice() {
+  return Booking.findAll({
+    where: {
+      status: 'accepted',
+      paymentStatus: 'unpaid',
+      paymentMethod: null,
+      amountSantim: null,
+      paidAt: null
+    },
+    attributes: ['id', 'customerId', 'workerId', 'description', 'address', 'scheduledDate', 'createdAt'],
+    include: [
+      { model: User, as: 'customer', attributes: ['id', 'name'] },
+      { model: User, as: 'worker', attributes: ['id', 'name'] }
+    ],
+    order: [['createdAt', 'ASC'], ['id', 'ASC']]
+  });
+}
+
 async function listPaymentReview() {
   const submissions = await PaymentSubmission.findAll({
     where: { status: 'pending' },
@@ -355,6 +373,7 @@ module.exports = {
   setWorkerApprovalStatus,
   approveWorker,
   setBookingAmount,
+  listBookingsNeedingPrice,
   listPaymentReview,
   approvePaymentSubmission,
   rejectPaymentSubmission,

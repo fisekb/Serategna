@@ -21,6 +21,7 @@
     <div class="admin-tabs" role="tablist" aria-label="Admin sections">
       <button class="admin-tab is-active" type="button" role="tab" aria-selected="true" data-admin-tab="workers">Workers</button>
       <button class="admin-tab" type="button" role="tab" aria-selected="false" data-admin-tab="users">User accounts</button>
+      <button class="admin-tab" type="button" role="tab" aria-selected="false" data-admin-tab="prices">Booking prices</button>
       <button class="admin-tab" type="button" role="tab" aria-selected="false" data-admin-tab="payments">Payment review</button>
       <button class="admin-tab" type="button" role="tab" aria-selected="false" data-admin-tab="payouts">Worker payouts</button>
     </div>
@@ -33,6 +34,12 @@
     <section class="panel admin-section" data-admin-panel="users" aria-labelledby="users-heading" hidden>
       <div class="section-heading"><div><span class="eyebrow">Access control</span><h2 id="users-heading">User accounts</h2></div><span id="user-count" class="helper-text"></span></div>
       <div id="user-list" class="admin-list"><div class="loading-state">Loading users…</div></div>
+    </section>
+
+    <section class="panel admin-section" data-admin-panel="prices" aria-labelledby="prices-heading" hidden>
+      <div class="section-heading"><div><span class="eyebrow">Set customer payment amount</span><h2 id="prices-heading">Accepted bookings waiting for a price</h2></div><span id="unpriced-count" class="helper-text"></span></div>
+      <p class="helper-text">Enter the agreed total in birr. Once saved, the customer will see Pay now and Pay later on My bookings.</p>
+      <div id="unpriced-booking-list" class="admin-list"><div class="loading-state">Loading accepted bookings…</div></div>
     </section>
 
     <section class="panel admin-section" data-admin-panel="payments" aria-labelledby="payments-heading" hidden>

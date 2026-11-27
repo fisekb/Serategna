@@ -64,6 +64,15 @@ const setBookingAmount = asyncHandler(async (req, res) => {
   });
 });
 
+const listBookingsNeedingPrice = asyncHandler(async (_req, res) => {
+  const bookings = await adminService.listBookingsNeedingPrice();
+  return res.status(200).json({
+    success: true,
+    message: 'Accepted bookings waiting for an agreed amount retrieved successfully.',
+    data: { bookings }
+  });
+});
+
 const listPaymentReview = asyncHandler(async (_req, res) => {
   const review = await adminService.listPaymentReview();
   return res.status(200).json({
@@ -120,6 +129,7 @@ module.exports = {
   setWorkerStatus,
   approveWorker,
   setBookingAmount,
+  listBookingsNeedingPrice,
   listPaymentReview,
   approvePaymentSubmission,
   rejectPaymentSubmission,

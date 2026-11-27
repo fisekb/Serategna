@@ -7,6 +7,7 @@ const {
   setWorkerStatus,
   approveWorker,
   setBookingAmount,
+  listBookingsNeedingPrice,
   listPaymentReview,
   approvePaymentSubmission,
   rejectPaymentSubmission,
@@ -37,6 +38,7 @@ router.get('/workers', listWorkers);
 router.get('/workers/pending', listPendingWorkers);
 router.patch('/workers/:id/status', updateWorkerStatusValidators, validate, setWorkerStatus);
 router.patch('/workers/:id/approve', workerProfileIdValidator, validate, approveWorker);
+router.get('/bookings/unpriced', listBookingsNeedingPrice);
 router.patch('/bookings/:id/amount', setBookingAmountValidators, validate, setBookingAmount);
 router.get('/payments/review', listPaymentReview);
 router.get('/payments/paid-bookings', listTelebirrPaidBookings);

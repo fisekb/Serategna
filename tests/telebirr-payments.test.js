@@ -453,6 +453,9 @@ describe('admin payment review and worker payouts', () => {
     const workerResponse = await request(app)
       .get('/api/admin/payments/review')
       .set('Authorization', tokenFor(worker));
+    const unpricedBookingsResponse = await request(app)
+      .get('/api/admin/bookings/unpriced')
+      .set('Authorization', tokenFor(worker));
     const rejectResponse = await request(app)
       .patch('/api/admin/payment-submissions/1/reject')
       .set('Authorization', tokenFor(customer));
@@ -462,8 +465,25 @@ describe('admin payment review and worker payouts', () => {
 
     expect(anonymousResponse.status).toBe(401);
     expect(workerResponse.status).toBe(403);
+    expect(unpricedBookingsResponse.status).toBe(403);
     expect(rejectResponse.status).toBe(403);
     expect(payoutResponse.status).toBe(403);
+  });
+
+  test('lists accepted bookings without a price and removes them after the admin sets one', async () => {
+    const booking = await createBooking({ amountSantim: null });
+    const firstList = await adminRequest('get', '/api/admin/bookings/unpriced');
+
+    expect(firstList.status).toBe(200);
+    expect(firstList.body.data.bookings.map((item) => item.id)).toContain(booking.id);
+
+    const priceResponse = await adminRequest('patch', `/api/admin/bookings/${booking.id}/amount`)
+      .send({ amountSantim: '100' });
+    const refreshedList = await adminRequest('get', '/api/admin/bookings/unpriced');
+
+    expect(priceResponse.status).toBe(200);
+    expect(priceResponse.body.data.booking.amountSantim).toBe('100');
+    expect(refreshedList.body.data.bookings.map((item) => item.id)).not.toContain(booking.id);
   });
 
   test('lists pending receipt amount and difference, then approves the submission', async () => {

@@ -143,6 +143,7 @@ input:focus, select:focus, textarea:focus { border-color: var(--brand); box-shad
 .admin-role { text-transform: capitalize; }
 .admin-review-card { align-items: start; }
 .admin-amount-field { width: min(320px, 100%); margin-top: 6px; color: var(--ink); }
+.admin-price-form { display: grid; width: min(360px, 100%); grid-template-columns: minmax(140px, 1fr) auto; align-items: end; gap: 10px; }
 .admin-sms-body { white-space: pre-wrap; overflow-wrap: anywhere; }
 
 .notice { padding: 13px 15px; border-radius: 12px; margin: 13px 0; line-height: 1.5; }
@@ -190,6 +191,7 @@ input:focus, select:focus, textarea:focus { border-color: var(--brand); box-shad
   .detail-card { padding: 20px; }
   .admin-row { grid-template-columns: 1fr; }
   .admin-row-actions { justify-content: space-between; }
+  .admin-price-form { grid-template-columns: 1fr; }
 }
 
 @media (prefers-reduced-motion: reduce) {
